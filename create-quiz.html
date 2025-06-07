@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>クイズ作成</title>
+  <link rel="stylesheet" href="./src/css/style.css">
+  <style>
+    .quiz-create-container { max-width: 500px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0002; padding: 2em; }
+    .quiz-create-container h2 { margin-bottom: 1em; }
+    .quiz-create-container label { display: block; margin-top: 1em; }
+    .quiz-create-container input, .quiz-create-container select, .quiz-create-container textarea { width: 100%; margin-top: 0.3em; padding: 0.5em; border-radius: 6px; border: 1px solid #ccc; }
+    .quiz-create-container button { margin-top: 1.5em; width: 100%; padding: 0.7em; font-size: 1.1em; border-radius: 6px; background: #ff9800; color: #fff; border: none; cursor: pointer; }
+    .quiz-create-container button:hover { background: #e68900; }
+    .quiz-preview { margin-top: 2em; background: #f7f7f7; border-radius: 8px; padding: 1em; }
+  </style>
+</head>
+<body>
+  <div class="quiz-create-container">
+    <h2>クイズ作成</h2>
+    <form id="quiz-create-form">
+      <label>カテゴリ
+        <select name="category" required>
+          <option value="general">一般</option>
+          <option value="science">理科</option>
+          <option value="history">歴史</option>
+          <option value="sports">スポーツ</option>
+          <option value="entertainment">エンタメ</option>
+        </select>
+      </label>
+      <label>難易度
+        <select name="difficulty" required>
+          <option value="easy">やさしい</option>
+          <option value="normal">ふつう</option>
+          <option value="hard">むずかしい</option>
+        </select>
+      </label>
+      <label>問題文
+        <textarea name="question" rows="3" required></textarea>
+      </label>
+      <label>答え
+        <input name="answer" required>
+      </label>
+      <button type="submit">プレビュー</button>
+      <button type="button" id="quiz-register-btn" style="background:#4caf50;margin-top:0.5em;">登録</button>
+    </form>
+    <div id="quiz-create-result"></div>
+  </div>
+  <script src="./src/js/create-quiz.js"></script>
+  <script>
+    // quiz-data.jsonを読み込んでカテゴリを動的に生成
+    fetch('./quiz-data.json')
+      .then(res => res.json())
+      .then(data => {
+        const select = document.querySelector('select[name="category"]');
+        select.innerHTML = '';
+        data.categories.forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat.id;
+          opt.textContent = cat.label;
+          select.appendChild(opt);
+        });
+      });
+  </script>
+</body>
+</html>

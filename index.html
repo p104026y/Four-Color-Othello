@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attack25</title>
+  <link rel="stylesheet" href="src/css/style.css">
+</head>
+<body>
+    <p>Welcome to the Attack25 game!</p>
+  <div class="main-container">
+    <div id="board" class="board"></div>
+    <div class="side-panel">
+      <div class="color-picker">
+        <button class="color-btn" data-color="red" style="background:red;"></button>
+        <button class="color-btn" data-color="green" style="background:green;"></button>
+        <button class="color-btn" data-color="white" style="background:white; border:1px solid #ccc;"></button>
+        <button class="color-btn" data-color="blue" style="background:blue;"></button>
+      </div>
+      <div class="action-buttons">
+        <button class="action-btn" id="clearBtn">クリア</button>
+        <button class="action-btn" id="undoBtn">やり直し</button>
+      </div>
+    </div>
+    <div class="quiz-panel">
+      <h2>クイズ生成</h2>
+      <div class="quiz-form">
+        <label>カテゴリー:
+          <select id="quiz-category">
+            <option value="general">一般</option>
+            <option value="science">科学</option>
+            <option value="history">歴史</option>
+            <option value="sports">スポーツ</option>
+            <option value="entertainment">エンタメ</option>
+          </select>
+        </label>
+        <label>難易度:
+          <select id="quiz-difficulty">
+            <option value="easy">やさしい</option>
+            <option value="normal">ふつう</option>
+            <option value="hard">むずかしい</option>
+          </select>
+        </label>
+        <button class="action-btn" id="generateQuizBtn">クイズ生成</button>
+      </div>
+      <div id="quiz-area" class="quiz-area">
+        <p class="quiz-placeholder">ここにクイズが表示されます</p>
+      </div>
+      <button id="showAnswerBtn" class="quiz-create-btn">答えを表示</button>
+    </div>
+  </div>
+  <div class="scoreboard-row">
+    <div class="scoreboard">
+      <div class="score-value" id="count-red">0</div>
+      <div class="score-bar red"></div>
+      <span class="color-dot" style="background:red;"></span>
+    </div>
+    <div class="scoreboard">
+      <div class="score-value" id="count-green">0</div>
+      <div class="score-bar green"></div>
+      <span class="color-dot" style="background:green;"></span>
+    </div>
+    <div class="scoreboard">
+      <div class="score-value" id="count-white">0</div>
+      <div class="score-bar white"></div>
+      <span class="color-dot" style="background:white; border:1px solid #ccc;"></span>
+    </div>
+    <div class="scoreboard">
+      <div class="score-value" id="count-blue">0</div>
+      <div class="score-bar blue"></div>
+      <span class="color-dot" style="background:blue;"></span>
+    </div>
+  </div>
+  <button id="createQuizPageBtn" class="quiz-create-btn" style="position:fixed;right:32px;bottom:32px;z-index:1000;box-shadow:0 2px 8px #0002;">クイズを作成する</button>
+  <script src="src/js/script.js"></script>
+</body>
+</html>

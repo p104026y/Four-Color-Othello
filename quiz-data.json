@@ -1,0 +1,41 @@
+{
+  "categories": [
+    { "id": "general", "label": "一般" },
+    { "id": "science", "label": "理科" },
+    { "id": "history", "label": "歴史" },
+    { "id": "sports", "label": "スポーツ" },
+    { "id": "entertainment", "label": "エンタメ" }
+  ],
+  "quizzes": [
+    {
+      "category": "general",
+      "difficulty": "easy",
+      "question": "日本の首都はどこ？",
+      "answer": "東京"
+    },
+    {
+      "category": "science",
+      "difficulty": "easy",
+      "question": "水の化学式は？",
+      "answer": "H2O"
+    },
+    {
+      "category": "history",
+      "difficulty": "easy",
+      "question": "織田信長が本能寺で討たれた年は？",
+      "answer": "1582年"
+    },
+    {
+      "category": "sports",
+      "difficulty": "easy",
+      "question": "サッカーは1チーム何人？",
+      "answer": "11人"
+    },
+    {
+      "category": "entertainment",
+      "difficulty": "easy",
+      "question": "「となりのトトロ」を作ったスタジオは？",
+      "answer": "スタジオジブリ"
+    }
+  ]
+}
