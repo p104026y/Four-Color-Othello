@@ -307,3 +307,27 @@ if (createQuizPageBtn) {
     window.location.href = './create-quiz.html';
   });
 }
+
+// 盤面保存・復元
+const saveBoardBtn = document.getElementById('saveBoardBtn');
+const loadBoardBtn = document.getElementById('loadBoardBtn');
+if (saveBoardBtn) {
+  saveBoardBtn.addEventListener('click', () => {
+    const boardState = cells.map(cell => cell.dataset.color);
+    localStorage.setItem('othello-board', JSON.stringify(boardState));
+    alert('盤面を保存しました');
+  });
+}
+if (loadBoardBtn) {
+  loadBoardBtn.addEventListener('click', () => {
+    const boardState = JSON.parse(localStorage.getItem('othello-board') || '[]');
+    if (boardState.length === size * size) {
+      boardState.forEach((color, i) => setCellColor(cells[i], color));
+      updateColorCounts();
+      highlightValidCells();
+      alert('盤面を復元しました');
+    } else {
+      alert('保存データがありません');
+    }
+  });
+}
