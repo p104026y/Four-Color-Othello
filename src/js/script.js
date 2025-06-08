@@ -65,6 +65,36 @@ function flipLine(row, col, dRow, dCol, color) {
   }
 }
 
+// flip-config.jsonからリズム間隔を取得
+let flipIntervalMs = 120;
+fetch('src/js/flip-config.json')
+  .then(res => res.json())
+  .then(cfg => { if(cfg.flipIntervalMs) flipIntervalMs = cfg.flipIntervalMs; });
+
+// アニメーション付きで1方向を塗る
+async function flipLineAnimated(row, col, dRow, dCol, color) {
+  let r = row + dRow;
+  let c = col + dCol;
+  const toFlip = [];
+  while (r >= 0 && r < size && c >= 0 && c < size) {
+    const idx = getCellIdx(r, c);
+    const cellColor = cells[idx].dataset.color;
+    if (!cellColor || cellColor === color) break;
+    toFlip.push(idx);
+    r += dRow;
+    c += dCol;
+  }
+  if (toFlip.length > 0 && getCellColor(r, c) === color) {
+    for (let i = 0; i < toFlip.length; i++) {
+      await new Promise(res => setTimeout(res, flipIntervalMs));
+      const idx = toFlip[i];
+      history.push({ idx, prev: cells[idx].dataset.color });
+      setCellColor(cells[idx], color);
+      updateColorCounts();
+    }
+  }
+}
+
 function canFlip(row, col, color) {
   if (getCellColor(row, col)) return false;
   const dirs = [
@@ -216,7 +246,7 @@ for (let i = 0; i < size * size; i++) {
   cell.className = 'cell';
   cell.innerHTML = `<span>${i + 1}</span>`;
   cell.dataset.color = '';
-  cell.addEventListener('click', function () {
+  cell.addEventListener('click', async function () {
     // can-placeのマスのみ塗れる
     if (cell.dataset.color !== selectedColor && cell.classList.contains('can-place')) {
       history.push({ idx: i, prev: cell.dataset.color });
@@ -227,7 +257,8 @@ for (let i = 0; i < size * size; i++) {
         [0, 1], [1, 0], [0, -1], [-1, 0],
         [1, 1], [1, -1], [-1, 1], [-1, -1]
       ];
-      dirs.forEach(([dr, dc]) => flipLine(row, col, dr, dc, selectedColor));
+      // 各方向のflipLineAnimatedを同時進行
+      await Promise.all(dirs.map(([dr, dc]) => flipLineAnimated(row, col, dr, dc, selectedColor)));
       updateColorCounts();
       highlightValidCells();
     }
