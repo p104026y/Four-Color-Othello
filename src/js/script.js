@@ -30,9 +30,22 @@ function updateColorCounts() {
 }
 
 function setCellColor(cell, color) {
+  // アタックチャンスで消されたマスは黄色で表示
+  if (color === '' && cell.classList.contains('attack-chance-removed')) {
+    cell.style.background = '#fffbe0';
+    cell.style.border = '2px solid #ffd600';
+    cell.dataset.color = '';
+    // 黄色枠は維持
+    return;
+  }
   cell.style.background = color === 'white' ? 'white' : color;
   cell.style.border = '2px solid #111';
   cell.dataset.color = color;
+  // 通常の色が塗られたらアタックチャンス黄色を解除
+  if (color && cell.classList.contains('attack-chance-removed')) {
+    cell.classList.remove('attack-chance-removed');
+    cell.style.boxShadow = '';
+  }
 }
 
 function getCellIdx(row, col) {
@@ -246,7 +259,8 @@ for (let i = 0; i < size * size; i++) {
   cell.className = 'cell';
   cell.innerHTML = `<span>${i + 1}</span>`;
   cell.dataset.color = '';
-  cell.addEventListener('click', async function () {
+  cell.addEventListener('click', function () {
+    if (attackChanceActive) return; // アタックチャンス中は通常操作不可
     // can-placeのマスのみ塗れる
     if (cell.dataset.color !== selectedColor && cell.classList.contains('can-place')) {
       history.push({ idx: i, prev: cell.dataset.color });
@@ -257,10 +271,19 @@ for (let i = 0; i < size * size; i++) {
         [0, 1], [1, 0], [0, -1], [-1, 0],
         [1, 1], [1, -1], [-1, 1], [-1, -1]
       ];
-      // 各方向のflipLineAnimatedを同時進行
-      await Promise.all(dirs.map(([dr, dc]) => flipLineAnimated(row, col, dr, dc, selectedColor)));
+      dirs.forEach(([dr, dc]) => flipLine(row, col, dr, dc, selectedColor));
       updateColorCounts();
       highlightValidCells();
+      checkAttackChance();
+      // アタックチャンス発動条件
+      if (isAttackChance) {
+        setTimeout(() => enableAttackChance(), 300);
+      }
+    }
+    // もしアタックチャンスで消されたマス（黄色）を再度取る場合は黄色を解除
+    if (cell.classList.contains('attack-chance-removed')) {
+      cell.classList.remove('attack-chance-removed');
+      cell.style.boxShadow = '';
     }
   });
   board.appendChild(cell);
@@ -277,6 +300,10 @@ clearBtn.addEventListener('click', () => {
   updateColorCounts();
   highlightValidCells();
   history.length = 0;
+  isAttackChance = false;
+  attackChanceActive = false;
+  lastRemovedCellIdx = null;
+  attackChanceTriggered = false;
 });
 
 // やり直し
@@ -360,5 +387,140 @@ if (loadBoardBtn) {
     } else {
       alert('保存データがありません');
     }
+  });
+}
+
+// アタックチャンス用フラグ・履歴
+let isAttackChance = false;
+let attackChanceActive = false;
+let lastRemovedCellIdx = null;
+let attackChanceTriggered = false; // 追加: 1回だけ発動用
+
+function checkAttackChance() {
+  // 残り4マスになった瞬間にアタックチャンス発動（1回だけ）
+  const emptyCount = cells.filter(cell => !cell.dataset.color).length;
+  if (!attackChanceTriggered && emptyCount === 4) {
+    isAttackChance = true;
+    attackChanceTriggered = true;
+  }
+}
+
+// アタックチャンスメッセージ表示
+function showAttackChanceMessage() {
+  const msg = document.getElementById('attack-chance-inline-msg');
+  if (msg) {
+    msg.textContent = 'アタックチャンスはどこにしますか？既存のマスを1つ選択してください';
+    msg.style.display = 'inline';
+  }
+}
+function hideAttackChanceMessage() {
+  const msg = document.getElementById('attack-chance-inline-msg');
+  if (msg) {
+    msg.textContent = '';
+    msg.style.display = 'none';
+  }
+}
+
+function highlightAttackableCells() {
+  cells.forEach(cell => {
+    cell.classList.remove('attack-chance-target');
+    // 選択時は黄色で囲わない
+    if (cell.dataset.color) {
+      cell.classList.add('attack-chance-target');
+      cell.style.boxShadow = '';
+      cell.style.cursor = 'pointer';
+    }
+  });
+}
+
+function clearAttackableHighlight() {
+  cells.forEach(cell => {
+    cell.classList.remove('attack-chance-target');
+    cell.style.boxShadow = '';
+    cell.style.cursor = '';
+  });
+}
+
+// アタックチャンスマスを取ったときに3回点滅
+async function blinkAttackChance(cell) {
+  for (let i = 0; i < 3; i++) {
+    cell.classList.remove('attack-chance-removed');
+    await new Promise(res => setTimeout(res, 180));
+    cell.classList.add('attack-chance-removed');
+    await new Promise(res => setTimeout(res, 180));
+  }
+  cell.classList.add('attack-chance-removed');
+}
+
+function enableAttackChance() {
+  attackChanceActive = true;
+  showAttackChanceMessage();
+  highlightAttackableCells();
+  // 既存の色付きマスを選択可能に
+  cells.forEach((cell, idx) => {
+    if (cell.dataset.color) {
+      cell.addEventListener('click', attackChanceHandler);
+      cell.dataset.attackChanceIdx = idx;
+    }
+  });
+}
+
+function disableAttackChance() {
+  attackChanceActive = false;
+  hideAttackChanceMessage();
+  clearAttackableHighlight();
+  // イベント解除
+  cells.forEach(cell => {
+    cell.removeEventListener('click', attackChanceHandler);
+    delete cell.dataset.attackChanceIdx;
+  });
+}
+
+function attackChanceHandler(e) {
+  if (!attackChanceActive) return;
+  const cell = e.currentTarget;
+  const idx = Number(cell.dataset.attackChanceIdx);
+  if (!cell.dataset.color) return;
+  // 確認メッセージ
+  if (window.confirm('このマスを消しますか？')) {
+    lastRemovedCellIdx = idx;
+    setCellColor(cell, '');
+    cell.classList.add('attack-chance-removed');
+    // 3回点滅させてから黄色枠を残す
+    blinkAttackChance(cell);
+    disableAttackChance();
+    updateColorCounts();
+    highlightValidCells();
+    // 1回だけ発動
+    isAttackChance = false;
+  }
+}
+
+// 盤面クリア時や復元時もアタックチャンス状態をリセット
+clearBtn.addEventListener('click', () => {
+  cells.forEach(cell => setCellColor(cell, ''));
+  updateColorCounts();
+  highlightValidCells();
+  history.length = 0;
+  isAttackChance = false;
+  attackChanceActive = false;
+  lastRemovedCellIdx = null;
+  attackChanceTriggered = false;
+});
+if (loadBoardBtn) {
+  loadBoardBtn.addEventListener('click', () => {
+    const boardState = JSON.parse(localStorage.getItem('othello-board') || '[]');
+    if (boardState.length === size * size) {
+      boardState.forEach((color, i) => setCellColor(cells[i], color));
+      updateColorCounts();
+      highlightValidCells();
+      alert('盤面を復元しました');
+    } else {
+      alert('保存データがありません');
+    }
+    isAttackChance = false;
+    attackChanceActive = false;
+    lastRemovedCellIdx = null;
+    attackChanceTriggered = false;
   });
 }
