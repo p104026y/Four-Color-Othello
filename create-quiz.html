@@ -34,11 +34,25 @@
           <option value="hard">むずかしい</option>
         </select>
       </label>
+      <label>タイトル
+        <input name="title" required>
+      </label>
       <label>問題文
         <textarea name="question" rows="3" required></textarea>
       </label>
+      <label>ヒント（任意）
+        <input name="hint">
+      </label>
       <label>答え
         <input name="answer" required>
+      </label>
+      <label>キャプション（任意）
+        <input name="caption">
+      </label>
+      <label>画像（任意）
+        <input type="text" name="image" placeholder="画像パスを入力 または下にドロップ" style="margin-bottom:0.5em;">
+        <div id="image-drop-area" style="border:1.5px dashed #bbb;padding:1em;text-align:center;color:#888;border-radius:8px;">ここに画像ファイルをドロップ</div>
+        <div id="image-preview" style="margin-top:0.5em;"></div>
       </label>
       <button type="submit">プレビュー</button>
       <button type="button" id="quiz-register-btn" style="background:#4caf50;margin-top:0.5em;">登録</button>
@@ -52,6 +66,7 @@
       .then(res => res.json())
       .then(data => {
         const select = document.querySelector('select[name="category"]');
+        if (!select) return;
         select.innerHTML = '';
         data.categories.forEach(cat => {
           const opt = document.createElement('option');

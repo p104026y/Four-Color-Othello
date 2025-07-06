@@ -225,59 +225,6 @@ button:hover {
 .score-label {
   display: none;
 }
-.quiz-panel {
-  background: #e0e0e0;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px #bbb2;
-  border: 1.5px solid #e0e0e0;
-  padding: 2em 1.5em 2em 1.5em;
-  min-width: 320px;
-  max-width: 340px;
-  margin-left: 2.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-.quiz-panel h2 {
-  font-size: 1.3rem;
-  margin-bottom: 1.2em;
-  color: #2c3e50;
-}
-.quiz-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-  margin-bottom: 1.5em;
-}
-.quiz-form label {
-  font-size: 1.05em;
-  color: #333;
-  margin-bottom: 0.2em;
-}
-.quiz-form select {
-  font-size: 1em;
-  margin-left: 0.5em;
-  padding: 0.2em 0.7em;
-  border-radius: 6px;
-  border: 1px solid #bbb;
-  background: #fff;
-}
-.quiz-area {
-  min-height: 80px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  padding: 1em;
-  font-size: 1.1em;
-  color: #222;
-  box-shadow: 0 1px 4px #bbb2;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-.quiz-placeholder {
-  color: #aaa;
-}
 /* アタックチャンスで消されたマスの黄色枠を1重だけに修正 */
 .cell.attack-chance-removed {
   position: relative;
@@ -389,4 +336,49 @@ button:hover {
   flex-direction: column;
   align-items: flex-start;
   gap: 1.5rem;
+}
+
+/* --- クイズ関連のスタイルを削除 --- */
+.quiz-panel, .quiz-panel h2, .quiz-form, .quiz-form label, .quiz-form select, .quiz-area, .quiz-placeholder, .quiz-create-btn {
+  display: none !important;
+}
+
+/* --- カテゴリパネルの新スタイル --- */
+.category-panel {
+  background: #e0e0e0;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px #bbb2;
+  border: 1.5px solid #e0e0e0;
+  padding: 2em 1.5em 2em 1.5em;
+  min-width: 320px;
+  max-width: 340px;
+  margin-left: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.category-panel h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1.2em;
+  color: #2c3e50;
+}
+#category-list {
+  list-style: disc inside;
+  padding-left: 1em;
+  font-size: 1.1em;
+  color: #222;
+}
+#category-list li {
+  margin-bottom: 0.7em;
+  padding: 0.3em 0.7em;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 4px #bbb2;
+  display: inline-block;
+}
+
+/* 横並びレイアウトgap調整 */
+.main-flex-row {
+  gap: 2.5rem;
 }

@@ -8,30 +8,35 @@
   ],
   "quizzes": [
     {
+      "id": "一般01",
       "category": "general",
       "difficulty": "easy",
       "question": "日本の首都はどこ？",
       "answer": "東京"
     },
     {
+      "id": "理科01",
       "category": "science",
       "difficulty": "easy",
       "question": "水の化学式は？",
       "answer": "H2O"
     },
     {
+      "id": "歴史01",
       "category": "history",
       "difficulty": "easy",
       "question": "織田信長が本能寺で討たれた年は？",
       "answer": "1582年"
     },
     {
+      "id": "スポーツ01",
       "category": "sports",
       "difficulty": "easy",
       "question": "サッカーは1チーム何人？",
       "answer": "11人"
     },
     {
+      "id": "エンタメ01",
       "category": "entertainment",
       "difficulty": "easy",
       "question": "「となりのトトロ」を作ったスタジオは？",

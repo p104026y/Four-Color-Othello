@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クイズ詳細</title>
+  <link rel="stylesheet" href="src/css/style.css">
+</head>
+<body>
+  <div class="menu-container">
+    <h1 id="quiz-title">クイズ詳細</h1>
+    <div id="quiz-detail"></div>
+    <button onclick="location.href='index.html'">アタック２５に戻る</button>
+  </div>
+  <script>
+  // URLからidを取得
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  console.log('URL id param:', id); // デバッグ用
+  fetch('quiz-data.json')
+    .then(res => res.json())
+    .then(data => {
+      console.log('Loaded quizzes:', data.quizzes); // デバッグ用
+      const foundQuiz = data.quizzes.find(q => q.id === id);
+      console.log('Found quiz:', foundQuiz); // デバッグ用
+      const detail = document.getElementById('quiz-detail');
+      const title = document.getElementById('quiz-title');
+      if (foundQuiz) {
+        // カテゴリ名を取得（catLabelがなければcategoriesから取得）
+        let catLabel = foundQuiz.catLabel;
+        if (!catLabel) {
+          const cat = data.categories.find(c => c.id === foundQuiz.category);
+          catLabel = cat ? cat.label : foundQuiz.category;
+        }
+        // クイズIDとカテゴリ名をタイトルに表示
+        title.innerHTML = `<span style='font-size:1.2em;font-weight:bold;'>${foundQuiz.id}</span> <span style='font-size:1em;color:#666;'>(${catLabel})</span>`;
+        detail.innerHTML =
+          `<div style='margin:1em 0;'><b>カテゴリ:</b> ${catLabel}</div>` +
+          `<div style='margin:1em 0;'><b>難易度:</b> ${foundQuiz.difficulty}</div>` +
+          (foundQuiz.title ? `<div style='margin:1em 0;'><b>タイトル:</b> ${foundQuiz.title}</div>` : '') +
+          `<div style='margin:1em 0;'><b>問題:</b> ${foundQuiz.question}</div>` +
+          (foundQuiz.hint ? `<div style='margin:1em 0;'><b>ヒント:</b> ${foundQuiz.hint}</div>` : '') +
+          `<div style='margin:1em 0;'><b>答え:</b> ${foundQuiz.answer}</div>` +
+          (foundQuiz.caption ? `<div style='margin:1em 0;'><b>キャプション:</b> ${foundQuiz.caption}</div>` : '') +
+          (foundQuiz.image ? `<div style='margin:1em 0;'><img src='${foundQuiz.image}' style='max-width:320px;max-height:180px;border-radius:8px;'></div>` : '');
+      } else {
+        title.textContent = 'クイズが見つかりません';
+        detail.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+</html>

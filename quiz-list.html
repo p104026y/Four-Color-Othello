@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クイズ一覧</title>
+  <link rel="stylesheet" href="src/css/style.css">
+</head>
+<body>
+  <div class="menu-container">
+    <h1>クイズ一覧（カテゴリ別）</h1>
+    <div id="quiz-category-list"></div>
+    <button onclick="location.href='index.html'">アタック２５に戻る</button>
+  </div>
+  <script>
+  // quiz-data.jsonからカテゴリごとにクイズを表示
+  fetch('quiz-data.json')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('quiz-category-list');
+      if (!data.categories || data.categories.length === 0) {
+        container.innerHTML = '<p>カテゴリがありません。</p>';
+        return;
+      }
+      data.categories.forEach(cat => {
+        const catDiv = document.createElement('div');
+        catDiv.style.margin = '1.5em 0';
+        catDiv.innerHTML = `<h3>${cat.label}</h3>`;
+        const ul = document.createElement('ul');
+        (data.quizzes || []).filter(q => q.category === cat.id).forEach((q, idx) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<b>難易度:</b> ${q.difficulty}　<b>タイトル:</b> ${q.title || ''}　<b>問題:</b> ${q.question}　<b>答え:</b> ${q.answer}` +
+            (q.caption ? `<br><b>キャプション:</b> ${q.caption}` : '') +
+            (q.image ? `<br><img src='${q.image}' style='max-width:180px;max-height:120px;border-radius:8px;margin-top:0.5em;'>` : '');
+          // 削除ボタン
+          const delBtn = document.createElement('button');
+          delBtn.textContent = '削除';
+          delBtn.style.marginLeft = '1em';
+          delBtn.onclick = async () => {
+            if (!confirm('本当に削除しますか？')) return;
+            // クイズ全体のインデックスを取得
+            const quizIdx = data.quizzes.findIndex(qq => qq === q);
+            if (quizIdx !== -1) {
+              data.quizzes.splice(quizIdx, 1);
+              await fetch('/api/save-quiz', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+              });
+              location.reload();
+            }
+          };
+          li.appendChild(delBtn);
+          // 編集ボタン
+          const editBtn = document.createElement('button');
+          editBtn.textContent = '編集';
+          editBtn.style.marginLeft = '0.5em';
+          editBtn.onclick = () => {
+            const newTitle = prompt('新しいタイトル', q.title || '');
+            if (newTitle === null) return;
+            const newQuestion = prompt('新しい問題文', q.question);
+            if (newQuestion === null) return;
+            const newHint = prompt('新しいヒント（空欄可）', q.hint || '');
+            if (newHint === null) return;
+            const newAnswer = prompt('新しい答え', q.answer);
+            if (newAnswer === null) return;
+            const newCaption = prompt('新しいキャプション（空欄可）', q.caption || '');
+            if (newCaption === null) return;
+            const newImage = prompt('新しい画像パスまたはDataURL（空欄可）', q.image || '');
+            if (newImage === null) return;
+            q.title = newTitle;
+            q.question = newQuestion;
+            q.hint = newHint;
+            q.answer = newAnswer;
+            q.caption = newCaption;
+            q.image = newImage;
+            fetch('/api/save-quiz', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            }).then(() => location.reload());
+          };
+          li.appendChild(editBtn);
+          // 使用済み判定
+          const usedKey = 'quiz-used-' + (q.title || q.question);
+          if (localStorage.getItem(usedKey)) {
+            li.style.background = '#e0e0e0';
+            li.style.color = '#888';
+          }
+          li.onclick = () => {
+            localStorage.setItem(usedKey, '1');
+            li.style.background = '#e0e0e0';
+            li.style.color = '#888';
+            // クイズID生成ロジック
+            const catCount = {};
+            let quizId = '';
+            let found = false;
+            data.categories.forEach(cat => { catCount[cat.id] = 1; });
+            for (const quiz of data.quizzes) {
+              const catLabel = (data.categories.find(c => c.id === quiz.category)?.label || quiz.category);
+              const id = catLabel + String(catCount[quiz.category]).padStart(2, '0');
+              if (quiz === q) { quizId = id; found = true; break; }
+              catCount[quiz.category]++;
+            }
+            if (found) {
+              window.location.href = `quiz-view.html?id=${encodeURIComponent(quizId)}`;
+            }
+          };
+          ul.appendChild(li);
+        });
+        if (ul.children.length === 0) {
+          ul.innerHTML = '<li>このカテゴリのクイズはありません。</li>';
+        }
+        catDiv.appendChild(ul);
+        container.appendChild(catDiv);
+      });
+    });
+  // URLからidを取得
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  fetch('quiz-data.json')
+    .then(res => res.json())
+    .then(data => {
+      // ID生成ロジックを他ページと同じに
+      const catCount = {};
+      let foundQuiz = null;
+      data.quizzes.forEach(q => {
+        if (!catCount[q.category]) catCount[q.category] = 1;
+        const catLabel = (data.categories.find(c => c.id === q.category)?.label || q.category);
+        const quizId = catLabel + String(catCount[q.category]).padStart(2, '0');
+        if (quizId === id) {
+          foundQuiz = { ...q, id: quizId, catLabel };
+        }
+        catCount[q.category]++;
+      });
+      // ...（以降は既存の表示ロジック）...
+    });
+  </script>
+</body>
+</html>

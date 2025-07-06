@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クイズ修正・削除</title>
+  <link rel="stylesheet" href="src/css/style.css">
+</head>
+<body>
+  <div class="menu-container">
+    <h1>クイズの修正・削除</h1>
+    <div id="quiz-edit-list"></div>
+    <button onclick="location.href='menu.html'">メニューに戻る</button>
+  </div>
+  <script>
+  // quiz-data.jsonからクイズ一覧を取得し表示
+  fetch('quiz-data.json')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('quiz-edit-list');
+      if (!data.quizzes || data.quizzes.length === 0) {
+        container.innerHTML = '<p>登録されたクイズがありません。</p>';
+        return;
+      }
+      container.innerHTML = '';
+      data.quizzes.forEach((q, idx) => {
+        const div = document.createElement('div');
+        div.style.border = '1px solid #ccc';
+        div.style.borderRadius = '8px';
+        div.style.margin = '1em 0';
+        div.style.padding = '1em';
+        div.innerHTML = `<b>カテゴリ:</b> ${q.category}　<b>難易度:</b> ${q.difficulty}<br><b>問題:</b> ${q.question}<br><b>答え:</b> ${q.answer}<br>`;
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '削除';
+        delBtn.style.marginRight = '1em';
+        delBtn.onclick = async () => {
+          if (!confirm('本当に削除しますか？')) return;
+          data.quizzes.splice(idx, 1);
+          await fetch('/api/save-quiz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          location.reload();
+        };
+        div.appendChild(delBtn);
+        // 編集ボタン（簡易）
+        const editBtn = document.createElement('button');
+        editBtn.textContent = '編集';
+        editBtn.onclick = () => {
+          const newQ = prompt('新しい問題文', q.question);
+          if (newQ !== null) {
+            q.question = newQ;
+            fetch('/api/save-quiz', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            }).then(() => location.reload());
+          }
+        };
+        div.appendChild(editBtn);
+        container.appendChild(div);
+      });
+    });
+  </script>
+</body>
+</html>

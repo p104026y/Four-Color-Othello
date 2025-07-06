@@ -50,38 +50,53 @@
           <button class="action-btn" id="undoBtn">やり直し</button>
           <button class="action-btn" id="saveBoardBtn">盤面を保存</button>
           <button class="action-btn" id="loadBoardBtn">盤面を復元</button>
+          <button onclick="location.href='menu.html'" class="action-btn" style="margin-bottom:1em;">メニューに戻る</button>
         </div>
       </div>
-      <div class="quiz-panel">
-        <h2>クイズ生成</h2>
-        <div class="quiz-form">
-          <label>カテゴリー:
-            <select id="quiz-category">
-              <option value="general">一般</option>
-              <option value="science">科学</option>
-              <option value="history">歴史</option>
-              <option value="sports">スポーツ</option>
-              <option value="entertainment">エンタメ</option>
-            </select>
-          </label>
-          <label>難易度:
-            <select id="quiz-difficulty">
-              <option value="easy">やさしい</option>
-              <option value="normal">ふつう</option>
-              <option value="hard">むずかしい</option>
-            </select>
-          </label>
-          <button class="action-btn" id="generateQuizBtn">クイズ生成</button>
-        </div>
-        <div id="quiz-area" class="quiz-area">
-          <p class="quiz-placeholder">ここにクイズが表示されます</p>
-        </div>
-        <button id="showAnswerBtn" class="quiz-create-btn">答えを表示</button>
+      <div class="category-panel">
+        <h2>クイズカテゴリ一覧</h2>
+        <ul id="category-list">
+          <li><a href="./quiz-view.html?id=一般01">一般01</a></li>
+          <li><a href="./quiz-view.html?id=理科01">理科01</a></li>
+          <li><a href="./quiz-view.html?id=歴史01">歴史01</a></li>
+          <li><a href="./quiz-view.html?id=スポーツ01">スポーツ01</a></li>
+          <li><a href="./quiz-view.html?id=エンタメ01">エンタメ01</a></li>
+        </ul>
       </div>
     </div>
   </div>
   <button id="createQuizPageBtn" class="quiz-create-btn" style="position:fixed;right:32px;bottom:32px;z-index:1000;box-shadow:0 2px 8px #0002;">クイズを作成する</button>
   <div id="attack-chance-msg-anchor"></div>
   <script src="src/js/script.js"></script>
+  <script>
+  // quiz-data.jsonから全クイズを日本語カテゴリ名＋連番で表示し、クリックで個別ページへ遷移
+  fetch('quiz-data.json')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('category-list');
+      if (!container || !data.quizzes) return;
+      // quizzesのidをそのまま使ってリスト表示
+      const quizzes = data.quizzes.slice();
+      // id順でソート
+      quizzes.sort((a, b) => a.id.localeCompare(b.id, 'ja'));
+      container.innerHTML = '';
+      quizzes.forEach(q => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.textContent = q.id;
+        a.href = './quiz-view.html?id=' + encodeURIComponent(q.id);
+        a.style.textDecoration = 'none';
+        a.style.color = 'inherit';
+        // 使用済み判定
+        const usedKey = 'quiz-used-' + (q.title || q.question);
+        if (localStorage.getItem(usedKey)) {
+          a.style.background = '#e0e0e0';
+          a.style.color = '#888';
+        }
+        li.appendChild(a);
+        container.appendChild(li);
+      });
+    });
+  </script>
 </body>
 </html>
